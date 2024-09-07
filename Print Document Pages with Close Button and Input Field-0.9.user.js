@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Print Document Pages with Close Button and Input Field
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.2
 // @description  เปิดหน้าต่างการพิมพ์โดยอัตโนมัติสำหรับหน้าเอกสารและแสดงปุ่มที่กดเพื่อปิดแท็บหลังจากเปิดหน้าต่างการพิมพ์ พร้อมช่องกรอกข้อมูลที่โฟกัสโดยอัตโนมัติ และปิดหน้าเว็บเมื่อกด Enter ในช่องกรอกข้อมูล
 // @author       Your Name
 // @match        *://*/*
@@ -13,19 +13,30 @@
 
     // ฟังก์ชันเพื่อตรวจสอบว่าหน้านี้เป็นประเภทเอกสารหรือไม่
     const isDocumentPage = () => {
-        // ตรวจสอบว่า `document.contentType` มีอยู่และรวม 'application/pdf'
         const contentType = document.contentType || '';
-        console.log('Document contentType:', contentType);
+        console.log('ประเภทเอกสาร:', contentType);
         return contentType.includes('application/pdf');
     };
 
     // ฟังก์ชันเพื่อเปิดหน้าต่างการพิมพ์และแสดงปุ่มปิดแท็บ
     const openPrintDialog = () => {
-        // เรียกหน้าต่างการพิมพ์
-        console.log('Opening print dialog...');
-        window.print();
+        console.log('กำลังเปิดหน้าต่างการพิมพ์...');
+        
+        try {
+            if (window.print) {
+                console.log('เรียกใช้งาน window.print()...');
+                window.print();
+            } else {
+                console.error('ฟังก์ชัน window.print() ไม่รองรับในเบราว์เซอร์นี้');
+                alert('ฟังก์ชันการพิมพ์ไม่รองรับในเบราว์เซอร์นี้');
+            }
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการเปิดหน้าต่างการพิมพ์:', error);
+            alert('เกิดข้อผิดพลาดในการเปิดหน้าต่างการพิมพ์');
+        }
 
         // สร้างปุ่มปิดแท็บ
+        console.log('กำลังสร้างปุ่มปิดแท็บ...');
         const closeButton = document.createElement('button');
         closeButton.textContent = 'คลิก เพื่อปิดแท็บนี้';
         closeButton.style.position = 'fixed';
@@ -43,6 +54,7 @@
         closeButton.style.transition = 'background-color 0.3s, transform 0.3s';
 
         // สร้างช่องกรอกข้อมูล
+        console.log('กำลังสร้างช่องกรอกข้อมูล...');
         const inputField = document.createElement('input');
         inputField.type = 'text';
         inputField.placeholder = 'กด Enter เพื่อปิดแท็บนี้';
@@ -84,6 +96,7 @@
         document.head.appendChild(style);
 
         // เพิ่มปุ่มและช่องกรอกข้อมูลลงในหน้าเว็บ
+        console.log('กำลังเพิ่มปุ่มและช่องกรอกข้อมูลลงในเอกสาร...');
         document.body.appendChild(closeButton);
         document.body.appendChild(inputField);
 
@@ -91,6 +104,7 @@
         inputField.focus();
 
         // เคลียร์ข้อมูลในช่องกรอกข้อมูลทุก 1 วินาที
+        console.log('เริ่มเคลียร์ข้อมูลในช่องกรอกข้อมูล...');
         setInterval(() => {
             inputField.value = '';
             inputField.focus();
@@ -98,9 +112,20 @@
 
         // กำหนดฟังก์ชันสำหรับปุ่มปิดแท็บ
         closeButton.addEventListener('click', () => {
-            console.log('Close button clicked.');
+            console.log('คลิกที่ปุ่มปิดแท็บ.');
             if (window.confirm('คุณแน่ใจหรือว่าต้องการปิดแท็บนี้?')) {
-                window.close();
+                try {
+                    if (window.close) {
+                        console.log('กำลังปิดแท็บ...');
+                        window.close();
+                    } else {
+                        console.error('ฟังก์ชัน window.close() ไม่รองรับ');
+                        alert('ไม่สามารถปิดแท็บนี้ได้');
+                    }
+                } catch (error) {
+                    console.error('เกิดข้อผิดพลาดในการปิดแท็บ:', error);
+                    alert('เกิดข้อผิดพลาดในการปิดแท็บ');
+                }
             }
         });
 
@@ -108,9 +133,20 @@
         inputField.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                console.log('Enter key pressed in input field.');
+                console.log('กดปุ่ม Enter ในช่องกรอกข้อมูล.');
                 if (window.confirm('คุณแน่ใจหรือว่าต้องการปิดแท็บนี้?')) {
-                    window.close();
+                    try {
+                        if (window.close) {
+                            console.log('กำลังปิดแท็บ...');
+                            window.close();
+                        } else {
+                            console.error('ฟังก์ชัน window.close() ไม่รองรับ');
+                            alert('ไม่สามารถปิดแท็บนี้ได้');
+                        }
+                    } catch (error) {
+                        console.error('เกิดข้อผิดพลาดในการปิดแท็บ:', error);
+                        alert('เกิดข้อผิดพลาดในการปิดแท็บ');
+                    }
                 }
             }
         });
@@ -119,9 +155,20 @@
         closeButton.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                console.log('Enter key pressed on close button.');
+                console.log('กดปุ่ม Enter บนปุ่มปิดแท็บ.');
                 if (window.confirm('คุณแน่ใจหรือว่าต้องการปิดแท็บนี้?')) {
-                    window.close();
+                    try {
+                        if (window.close) {
+                            console.log('กำลังปิดแท็บ...');
+                            window.close();
+                        } else {
+                            console.error('ฟังก์ชัน window.close() ไม่รองรับ');
+                            alert('ไม่สามารถปิดแท็บนี้ได้');
+                        }
+                    } catch (error) {
+                        console.error('เกิดข้อผิดพลาดในการปิดแท็บ:', error);
+                        alert('เกิดข้อผิดพลาดในการปิดแท็บ');
+                    }
                 }
             }
         });
@@ -129,8 +176,12 @@
 
     // รอให้หน้าเว็บโหลดเสร็จแล้วจึงทำการตรวจสอบและเปิดหน้าต่างการพิมพ์
     window.addEventListener('load', () => {
+        console.log('หน้าเว็บโหลดเสร็จแล้ว. กำลังตรวจสอบว่าหน้านี้เป็นเอกสารหรือไม่...');
         if (isDocumentPage()) {
+            console.log('ตรวจพบว่าเป็นหน้าที่มีเอกสาร. กำลังเปิดหน้าต่างการพิมพ์...');
             openPrintDialog();
+        } else {
+            console.log('นี่ไม่ใช่หน้าเอกสาร.');
         }
     });
 })();
